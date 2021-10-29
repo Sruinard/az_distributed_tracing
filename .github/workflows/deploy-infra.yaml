@@ -1,0 +1,19 @@
+name: Deploy infra
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: 'Check out sources'
+      uses: actions/checkout@v2
+    - name: Azure login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}      
+    - name: 'Deploy infrastructure'
+      run: |
+          chmod +x $GITHUB_WORKSPACE/infra/deploy.sh
+          $GITHUB_WORKSPACE/infra/deploy.sh
