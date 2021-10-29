@@ -70,7 +70,7 @@ resource cosmosdb_container 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/
   location: location
   properties: {
     resource: {
-      id: 'maintenances'
+      id: 'orders'
       partitionKey:{
         kind: 'Hash'
         paths: [
