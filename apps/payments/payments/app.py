@@ -1,4 +1,5 @@
 import uvicorn
+import requests
 from azure.monitor.opentelemetry.exporter import AzureMonitorTraceExporter
 from dotenv import load_dotenv
 from fastapi import FastAPI
@@ -12,9 +13,8 @@ from opentelemetry.sdk.trace.export import (BatchSpanProcessor,
                                             ConsoleSpanExporter,
                                             SimpleSpanProcessor)
 
-import shipping.repo as repo
-from shipping.models import Order
-from shipping.config import Config
+from payments.models import Order
+from payments.config import Config
 
 load_dotenv()
 
@@ -28,7 +28,7 @@ app.add_middleware(
 )
 
 trace.set_tracer_provider(TracerProvider(
-    resource=Resource.create({SERVICE_NAME: "shipments"})
+    resource=Resource.create({SERVICE_NAME: "payments"})
 ))
 tracer = trace.get_tracer(__name__)
 
@@ -38,7 +38,7 @@ def startup_event():
     # This line causes your calls made with the requests library to be tracked.
     span_processor = BatchSpanProcessor(
         AzureMonitorTraceExporter.from_connection_string(
-            Config.APPINSIGHTS_CONNECTION_STRING
+            Config.appinsights_connection_string
         )
     )
     trace.get_tracer_provider().add_span_processor(span_processor)
@@ -56,17 +56,11 @@ async def get():
     return "Distributed tracing"
 
 
-@app.get("/orders")
-async def create_order():
-    order_repo = repo.CosmosRepo()
-    orders = order_repo.get_all()
-    return orders
-
-
-@app.post("/orders")
+@app.post("/payments")
 async def create_order(order: Order):
-    order_repo = repo.CosmosRepo()
-    placed_order = order_repo.add(order)
+    order_to_place = order.json()
+    placed_order = requests.post(
+        Config.shipping_endpoint + "orders", data=order_to_place).json()
     return placed_order
 
 

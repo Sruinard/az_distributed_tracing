@@ -1,12 +1,12 @@
 from azure.cosmos import CosmosClient
-from shipping.config import CosmosConfig, get_cosmos_connection_config
+from shipping.config import Config
 
 
 class CosmosRepo:
     DATABASE_NAME = "webshop"
     CONTAINER_NAME = "orders"
 
-    def __init__(self, cosmos_connection_config: CosmosConfig = get_cosmos_connection_config()) -> None:
+    def __init__(self, cosmos_connection_config: Config = Config()) -> None:
         super().__init__()
 
         # Create the cosmos client
