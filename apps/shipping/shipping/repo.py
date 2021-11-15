@@ -28,3 +28,13 @@ class CosmosRepo:
             enable_cross_partition_query=True
         ))
         return orders
+
+    def get_order(self, item_id):
+        orders = list(self.container.query_items(
+            query="SELECT * FROM r WHERE r.item_id=@item_id",
+            parameters=[
+                {"name": "@item_id", "value": item_id},
+            ],
+            enable_cross_partition_query=True
+        ))
+        return orders

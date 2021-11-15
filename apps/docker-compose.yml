@@ -1,0 +1,32 @@
+version: "3"
+services:
+  webshop:
+    build:
+      context: ./webshop
+    ports:
+      - "8080:8080"
+    environment:
+      PAYMENTS_ENDPOINT: 'http://payments:8081/'
+      SHIPMENTS_ENDPOINT: "http://shipping:8082/"
+      REDIS_HOST: "redis"
+      REDIS_PASS: ""
+      REDIS_PORT: 6379
+    depends_on:
+     - redis
+  payments:
+    build:
+      context: ./payments
+    ports:
+      - "8081:8081"
+    environment:
+      SHIPPING_ENDPOINT: 'http://shipping:8082/'
+  shipping:
+    build:
+      context: ./shipping
+    ports:
+      - "8082:8082"
+    environment:
+      ACCOUNT_URI: 'https://dev-srtrace.documents.azure.com:443/'
+      ACCOUNT_KEY: 'RajNCmS6jDqdUFU0zQuFYjVfxl0Q1MBZvHnGARv1LiLq0oXhsYR7807KDUYAoXyxDKzSrVxP8gHzgc0VSCkoqw=='
+  redis:
+    image: redis

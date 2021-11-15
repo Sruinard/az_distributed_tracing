@@ -30,6 +30,7 @@ setup(
         "opentelemetry-sdk",
         "opentelemetry-instrumentation-fastapi",
         "azure-monitor-opentelemetry-exporter",
+        "opentelemetry-instrumentation-requests",
         "asgiref"
     ],
     # this approach automatically finds out all directories (packages) - those must contain a file named __init__.py (can be empty)

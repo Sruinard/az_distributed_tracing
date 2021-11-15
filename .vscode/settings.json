@@ -1,0 +1,11 @@
+{
+    "azureFunctions.deploySubpath": "apps/warehouse",
+    "azureFunctions.scmDoBuildDuringDeployment": true,
+    "azureFunctions.pythonVenv": ".venv",
+    "azureFunctions.projectLanguage": "Python",
+    "azureFunctions.projectRuntime": "~3",
+    "debug.internalConsoleOptions": "neverOpen",
+    "azureFunctions.projectSubpath": "apps/warehouse",
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true
+}

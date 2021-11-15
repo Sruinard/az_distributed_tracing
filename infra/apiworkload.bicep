@@ -4,7 +4,7 @@ var location = resourceGroup().location
 
 
 resource appserviceplan 'Microsoft.Web/serverfarms@2021-01-15' = {
-  name: '${environment}-api-app-asp-${uniqueness}'
+  name: '${environment}-${uniqueness}'
   location: location
   kind: 'linux'
   properties: {
@@ -17,12 +17,12 @@ resource appserviceplan 'Microsoft.Web/serverfarms@2021-01-15' = {
 }
 
 resource workspace 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
-  name: '${environment}-api-app-logs-${uniqueness}'
+  name: '${environment}-${uniqueness}'
   location: location
 }
 
 resource appinsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: '${environment}-api-app-insights-${uniqueness}'
+  name: '${environment}-${uniqueness}'
   location: location
   kind: 'web'  
   properties: {
@@ -37,7 +37,7 @@ resource appinsights 'Microsoft.Insights/components@2020-02-02' = {
 // ####################
 
 resource cosmos_account 'Microsoft.DocumentDB/databaseAccounts@2021-07-01-preview' = {
-  name: '${environment}-we-cosmos-webshop'
+  name: '${environment}-${uniqueness}'
   location: location
   properties: {
     createMode: 'Default'
@@ -82,10 +82,23 @@ resource cosmosdb_container 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/
   }
 }
 
+resource redis 'Microsoft.Cache/redis@2020-12-01' = {
+  name: '${environment}-${uniqueness}'
+  location: location
+  properties: {
+    redisVersion: '6.0.14'
+    sku: {
+      name: 'Standard'
+      family: 'C'
+      capacity: 1
+    }
+  }
+}
+
 
 resource webshop 'Microsoft.Web/sites@2021-02-01' = {
-  name: '${environment}-api-app-api-python-${uniqueness}'
-  location: location
+  name: '${uniqueness}-webshop'
+  location: 'westeurope'
   identity: {
     type: 'SystemAssigned'
   }
@@ -105,8 +118,28 @@ resource webshop 'Microsoft.Web/sites@2021-02-01' = {
           value: appinsights.properties.InstrumentationKey
         }
         {
-          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+          name: 'APPINSIGHTS_CONNECTION_STRING'
           value: appinsights.properties.ConnectionString
+        }
+        {
+          name: 'REDIS_HOST'
+          value: redis.properties.hostName
+        }
+        {
+          name: 'REDIS_PASS'
+          value: listKeys(redis.id, redis.apiVersion).PrimaryKey
+        }
+        {
+          name: 'REDIS_PORT'
+          value: string(redis.properties.port)
+        }
+        {
+          name: 'PAYMENTS_ENDPOINT'
+          value: 'https://${payments.properties.defaultHostName}/'
+        }
+        {
+          name: 'SHIPMENTS_ENDPOINT'
+          value: 'https://${shipping.properties.defaultHostName}/'
         }
         {
           name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
@@ -116,15 +149,8 @@ resource webshop 'Microsoft.Web/sites@2021-02-01' = {
           name: 'XDT_MicrosoftApplicationInsights_Mode'
           value: 'recommended'
         }
-        {
-          name: 'ACCOUNT_URI'
-          value: cosmos_account.properties.documentEndpoint
-        }        
-        {
-          name: 'ACCOUNT_KEY'
-          value: listKeys(cosmos_account.id, cosmos_account.apiVersion).primaryMasterKey
-        }        
       ]
+      
       linuxFxVersion: 'python|3.7'
       alwaysOn: false
       
@@ -132,3 +158,117 @@ resource webshop 'Microsoft.Web/sites@2021-02-01' = {
     clientAffinityEnabled: false    
   }  
 }
+
+resource payments 'Microsoft.Web/sites@2021-02-01' = {
+  name: '${uniqueness}-payments'
+  location: 'westeurope'
+  identity: {
+    type: 'SystemAssigned'
+  }
+  properties: {
+    serverFarmId: appserviceplan.id
+    httpsOnly: true    
+    siteConfig: {
+      cors: {
+        allowedOrigins: [
+          '*'
+        ]
+        supportCredentials: false
+      }
+      appSettings: [
+        {
+          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
+          value: appinsights.properties.InstrumentationKey
+        }
+        {
+          name: 'APPINSIGHTS_CONNECTION_STRING'
+          value: appinsights.properties.ConnectionString
+        }
+        {
+          name: 'SHIPPING_ENDPOINT'
+          value: 'https://${shipping.properties.defaultHostName}/'
+        }
+        {
+          name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
+          value: '~3'
+        }
+        {
+          name: 'XDT_MicrosoftApplicationInsights_Mode'
+          value: 'recommended'
+        }
+      ]
+      
+      linuxFxVersion: 'python|3.7'
+      alwaysOn: false
+      
+    }
+    clientAffinityEnabled: false    
+  }  
+}
+
+resource shipping 'Microsoft.Web/sites@2021-02-01' = {
+  name: '${uniqueness}-shipping'
+  location: 'westeurope'
+  identity: {
+    type: 'SystemAssigned'
+  }
+  properties: {
+    serverFarmId: appserviceplan.id
+    httpsOnly: true    
+    siteConfig: {
+      cors: {
+        allowedOrigins: [
+          '*'
+        ]
+        supportCredentials: false
+      }
+      appSettings: [
+        {
+          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
+          value: appinsights.properties.InstrumentationKey
+        }
+        {
+          name: 'APPINSIGHTS_CONNECTION_STRING'
+          value: appinsights.properties.ConnectionString
+        }
+        {
+          name: 'ACCOUNT_URI'
+          value: cosmos_account.properties.documentEndpoint
+        }        
+        {
+          name: 'ACCOUNT_KEY'
+          value: listKeys(cosmos_account.id, cosmos_account.apiVersion).primaryMasterKey
+        }     
+        {
+          name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
+          value: '~3'
+        }
+        {
+          name: 'XDT_MicrosoftApplicationInsights_Mode'
+          value: 'recommended'
+        }
+      ]
+      
+      linuxFxVersion: 'python|3.7'
+      alwaysOn: false
+      
+    }
+    clientAffinityEnabled: false    
+  }  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -57,9 +57,16 @@ async def get():
 
 
 @app.get("/orders")
-async def create_order():
+async def get_orders():
     order_repo = repo.CosmosRepo()
     orders = order_repo.get_all()
+    return orders
+
+
+@app.get("/orders/{item_id}")
+async def get_order(item_id: int):
+    order_repo = repo.CosmosRepo()
+    orders = order_repo.get_order(item_id=item_id)
     return orders
 
 
