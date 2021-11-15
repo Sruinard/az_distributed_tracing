@@ -23,7 +23,7 @@ import redis
 templates = Jinja2Templates(directory="templates/")
 load_dotenv()
 REDIS = redis.StrictRedis(host=Config.REDIS_HOST,
-                          port=Config.REDIS_PORT, password=Config.REDIS_PASS)
+                          port=Config.REDIS_PORT, db=0,  password=Config.REDIS_PASS, ssl=True)
 
 app = FastAPI()
 app.add_middleware(
@@ -59,7 +59,7 @@ def startup_event():
 @app.get("/")
 async def get():
     result = REDIS.ping()
-    return "Ping returned by redis : " + str(result)
+    return "Ping returned by redis is: " + str(result)
 
 
 @app.get("/orders/{item_id}")

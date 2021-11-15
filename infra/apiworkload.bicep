@@ -131,7 +131,7 @@ resource webshop 'Microsoft.Web/sites@2021-02-01' = {
         }
         {
           name: 'REDIS_PORT'
-          value: string(redis.properties.port)
+          value: string(redis.properties.sslPort)
         }
         {
           name: 'PAYMENTS_ENDPOINT'
