@@ -20,6 +20,12 @@ from fastapi.templating import Jinja2Templates
 import redis
 
 
+class Order(BaseModel):
+    item_id: int
+    quantity: int
+    price: float
+
+
 templates = Jinja2Templates(directory="templates/")
 load_dotenv()
 REDIS = redis.StrictRedis(host=Config.REDIS_HOST,
@@ -64,23 +70,18 @@ async def get():
 
 @app.get("/orders/{item_id}")
 async def get_order(item_id: int):
-    response = REDIS.get(item_id)
-    if not response:
+    cached_response = REDIS.get(item_id)
+    if cached_response:
+        response = json.loads(cached_response)
+    else:
         response = requests.get(
             f"{Config.SHIPMENTS_ENDPOINT}orders/{item_id}").json()
-        REDIS.set(item_id, response)
+        REDIS.set(item_id, json.dumps(response))
     return response
-
-
-class Order(BaseModel):
-    item_id: int
-    quantity: int
-    price: float
 
 
 @app.get("/orders")
 def get_orders():
-
     response = requests.get(Config.SHIPMENTS_ENDPOINT +
                             "orders").json()
     return response

@@ -100,9 +100,9 @@ name: Build and Deploy Distributed Tracing
 
 on:
   workflow_dispatch:
-  # push:
-  #   branches:
-  #     - main
+  push:
+    branches:
+      - master
 
 env:
   AZURE_PYTHON_WEBAPP_WEBSHOP: srtrace-webshop  

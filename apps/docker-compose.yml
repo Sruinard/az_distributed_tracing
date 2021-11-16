@@ -8,11 +8,11 @@ services:
     environment:
       PAYMENTS_ENDPOINT: 'http://payments:8081/'
       SHIPMENTS_ENDPOINT: "http://shipping:8082/"
-      REDIS_HOST: "redis"
-      REDIS_PASS: ""
-      REDIS_PORT: 6379
-    depends_on:
-     - redis
+      REDIS_HOST: "dev-srtrace.redis.cache.windows.net"
+      REDIS_PASS: "OqGeIlrK41P2WQ8FvO8JMqqEhbrmxcMJMAzCaDibcus="
+      REDIS_PORT: 6380
+    # depends_on:
+    #  - redis
   payments:
     build:
       context: ./payments
